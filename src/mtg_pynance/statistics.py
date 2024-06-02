@@ -1,168 +1,139 @@
+from mtg_pynance.config import Config
+from mtg_pynance.collection import load_collection
+
+from datetime import datetime
 from pathlib import Path
 import polars as pl
 import numpy as np
+import sqlite3
 
 
-def collection_valid(collection: pl.LazyFrame):
+def do_card_stats(bulk_data, collection, cid):
     """
-    Checks input collection file for compliance to prevent code breaking downstream.
+    Calculates card statistics and returns them in a Numpy 1x3 matrix. The 0th element is the card's
+    current price, the 1st element is the purchase price, and the 3rd element is the profit.
+
+    Calculates card statistics, which are its current price, purchase price, and profit.
 
     Parameters
     ----------
+    bulk_data: Path
+        Path to Scryfall's bulk data default cards json file.
+    collection: Path
+        Path to csv file of collection of cards.
+
+    Variables:
+       row: integer of row in collection dataframe corresponding to one card
     """
-    rows: int = collection.select(pl.count()).collect().item()
+    id = collection.filter(pl.col("cid") == cid).collect().select("id").item()
+    foiling = collection.filter(pl.col("cid") == cid).collect().select("foiling").item()
+    print(id)
+    print(foiling)
 
-    # Check if every card has an ID
-    if collection.select(pl.col("id")).count().collect().item() != rows:
-        raise Exception("Some cards are missing ID's! Check collection file!")
+    # # determine status of foil
+    # foilkey = ""
+    # if foil == "none":
+    #     foilkey = "usd"
+    # elif foil == "foil":
+    #     foilkey = "usd_foil"
+    # else:
+    #     foilkey = "usd_etched"
 
-    # Check if every card has a unique ID
-    if collection.select(pl.col("id")).collect().unique(keep="any").height != rows:
-        raise Exception("Not every card has a unique ID! Check collection file!")
+    print(bulk_data.filter(pl.col("id") == id).collect())
+    # # determine current price, purchase price, and profit
+    # c_price = float(
+    #     bulk.row(by_predicate=(pl.col("id") == id), named=True)["prices"][foilkey]
+    # )
+    # p_price = collection.row(row, named=True)["purchase_price"]
+    # profit = c_price - p_price
 
-    # Check if every card has an integer ID
-    # Note that polars seems to default interpret ints as int64
-    if not isinstance(collection.schema["id"], pl.Int64):
-        raise Exception("ID's are not integers! Check collection file!")
+    # # Return results as NumPy array
+    # matrix = np.array([c_price, p_price, profit])
 
-    # Check if every card has a foil type
-    if collection.select(pl.col("foil")).count().collect().item() != rows:
-        raise Exception("Some cards are missing foil types! Check collection file!")
-
-    # Check if foil types are of allowed kind
-    if (
-        collection.filter(pl.col("foil") != "none" & pl.col("foil") != "foil")
-        .collect()
-        .height
-        != rows
-    ):
-        raise Exception("Some cards have invalid foil types! Check collection file!")
-
-
-# def card_stats(bulk_data, collection, row):
-#     """
-#     Calculates card statistics and returns them in a Numpy 1x3 matrix. The 0th element is the card's
-#     current price, the 1st element is the purchase price, and the 3rd element is the profit.
-
-#     Calculates card statistics, which are its current price, purchase price, and profit.
-
-#     Parameters
-#     ----------
-#     bulk_data: Path
-#         Path to Scryfall's bulk data default cards json file.
-#     collection: Path
-#         Path to csv file of collection of cards.
-
-#     Variables:
-#        row: integer of row in collection dataframe corresponding to one card
-#     """
-#     # Use a try-except structure to capture a multitude of possible errors with collection and bulk data files
-#     try:
-#         # Get id and foil information of card in input row
-#         id = collection.row(row, named=True)["id"]
-#         foil = collection.row(row, named=True)["foil"]
-
-#         # determine status of foil
-#         foilkey = ""
-#         if foil == "none":
-#             foilkey = "usd"
-#         elif foil == "foil":
-#             foilkey = "usd_foil"
-#         else:
-#             foilkey = "usd_etched"
-
-#         # determine current price, purchase price, and profit
-#         c_price = float(
-#             bulk.row(by_predicate=(pl.col("id") == id), named=True)["prices"][foilkey]
-#         )
-#         p_price = collection.row(row, named=True)["purchase_price"]
-#         profit = c_price - p_price
-#     except:
-#         print(f"Error with card with collection_id {row}. Check CSV.")
-#         return None
-
-#     # Return results as NumPy array
-#     matrix = np.array([c_price, p_price, profit])
-
-#     return matrix
+    # return matrix
 
 
-# def collection_stats(bulk, collection):
-#     """
-#     The main function of mtg pynance. It calculates the card statistics of every card in the collection with the
-#     downloaded Scryfall default cards bulk data file and writes the statistics for each card to a table
-#     in the created SQL database called "collection_statistics.db". The overall collection statistics are calculated
-#     as well and written to a table in the same database. If a table in the database already has an entry with the
-#     downloaded default cards file, nothing will be added to it.
+def do_collection_stats(config: Config):
+    """
+    The main function of mtg pynance. It calculates the card statistics of every card in the collection with the
+    downloaded Scryfall default cards bulk data file and writes the statistics for each card to a table
+    in the created SQL database called "collection_statistics.db". The overall collection statistics are calculated
+    as well and written to a table in the same database. If a table in the database already has an entry with the
+    downloaded default cards file, nothing will be added to it.
 
-#     Variables:
-#         bulk, collection: Polars dataframes. bulk is the Scryfall dataframe and collection is the collection dataframe.
-#     """
-#     # Validate collection file
-#     # do validation
+    Variables:
+        bulk, collection: Polars dataframes. bulk is the Scryfall dataframe and collection is the collection dataframe.
+    """
 
-#     # Connect to local SQL database
-#     connection = sqlite3.connect("collection_statistics.db")
-#     cursor = connection.cursor()
+    collection: pl.LazyFrame = load_collection(config.collection_path)
+    bulk_data: pl.LazyFrame = pl.scan_csv(config.get_bulk_data_path())
 
-#     # Total number of cards in collection
-#     cardcount = collection.select(pl.count()).item()
+    # Connect to local SQL database
+    connection = sqlite3.connect("collection_statistics.db")
+    cursor = connection.cursor()
 
-#     # Determine timestamp of default_cards file
-#     dc_df = pl.read_json("bulk_data_info.json")
-#     dc_ts = dc_df.row(0, named=True)["updated_at"]
-#     dc_dt = datetime.fromisoformat(dc_ts)
+    # # # Determine timestamp of default_cards file
+    # # dc_df = pl.read_json("bulk_data_info.json")
+    # # dc_ts = dc_df.row(0, named=True)["updated_at"]
+    # # dc_dt = datetime.fromisoformat(dc_ts)
 
-#     # Calculate the profit and value of each card and add it to respective total
-#     collection_matrix = np.zeros(3)
-#     gain_loss_percent = 0
+    # # Calculate the profit and value of each card and add it to respective total
+    # collection_matrix = np.zeros(3)
+    # gain_loss_percent = 0
 
-#     for card in range(cardcount):
-#         # Create tablename of card
-#         collection_id = collection.row(card, named=True)["collection_id"]
-#         tablename = "card_" + str(collection_id)
+    cid_array: np.ndarray = (
+        collection.select(pl.col("cid")).collect().to_numpy().flatten()
+    )
+    for card in cid_array:
+        # SQL tablename of card
+        table_name = str(card)
 
-#         # Calculate card statistics
-#         card_matrix = card_stats(bulk, collection, card)
-#         if card_matrix is None:
-#             continue
-#         gain_loss_percent = (card_matrix[0] - card_matrix[1]) / card_matrix[1] * 100
+        # Calculate card statistics
+        try:
+            card_matrix = do_card_stats(bulk_data, collection, card)
+        except:
+            print(
+                f"Could not calculate card statistics of card with collection ID {card}!"
+            )
+        break
 
-#         # Create card's table in dataframe, if nonexistent. Delete last tuple added to its table
-#         # if its timestamp is the same as the currently downloaded default_cards file
-#         db_table(cursor, tablename, dc_dt)
+        # gain_loss_percent = (card_matrix[0] - card_matrix[1]) / card_matrix[1] * 100
 
-#         # Insert card statistics into its table in database
-#         sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format(tablename)
-#         cursor.execute(
-#             sql_command,
-#             (dc_ts, card_matrix[0], card_matrix[1], card_matrix[2], gain_loss_percent),
-#         )
+    #     # Create card's table in dataframe, if nonexistent. Delete last tuple added to its table
+    #     # if its timestamp is the same as the currently downloaded default_cards file
+    #     db_table(cursor, tablename, dc_dt)
 
-#         # Calculate collection statistics
-#         collection_matrix += card_matrix
-#         gain_loss_percent = (
-#             (collection_matrix[0] - collection_matrix[1]) / collection_matrix[1] * 100
-#         )
+    #     # Insert card statistics into its table in database
+    #     sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format(tablename)
+    #     cursor.execute(
+    #         sql_command,
+    #         (dc_ts, card_matrix[0], card_matrix[1], card_matrix[2], gain_loss_percent),
+    #     )
 
-#     # Make table called "collection" in database if it does not exist and add collection statistics
-#     db_table(cursor, "collection", dc_dt)
-#     sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format("collection")
-#     cursor.execute(
-#         sql_command,
-#         (
-#             dc_ts,
-#             collection_matrix[0],
-#             collection_matrix[1],
-#             collection_matrix[2],
-#             gain_loss_percent,
-#         ),
-#     )
+    #     # Calculate collection statistics
+    #     collection_matrix += card_matrix
+    #     gain_loss_percent = (
+    #         (collection_matrix[0] - collection_matrix[1]) / collection_matrix[1] * 100
+    #     )
 
-#     connection.commit()
-#     connection.close()
+    # # Make table called "collection" in database if it does not exist and add collection statistics
+    # db_table(cursor, "collection", dc_dt)
+    # sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format("collection")
+    # cursor.execute(
+    #     sql_command,
+    #     (
+    #         dc_ts,
+    #         collection_matrix[0],
+    #         collection_matrix[1],
+    #         collection_matrix[2],
+    #         gain_loss_percent,
+    #     ),
+    # )
 
-#     return
+    # connection.commit()
+    # connection.close()
+
+    return
 
 
 # def db_table(cursor, tablename, timestamp):

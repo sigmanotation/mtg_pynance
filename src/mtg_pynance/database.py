@@ -1,10 +1,12 @@
+from mtg_pynance.config import Config
+
 from datetime import datetime
 from pathlib import Path
 import requests
 import json
 
 
-def retrieve_database(target_path: Path):
+def retrieve_database(config: Config):
     """
     Write Scryfall's bulk data default cards json file and its information json file
     at the target path. If these files already exist at the target path, they are
@@ -14,12 +16,11 @@ def retrieve_database(target_path: Path):
 
     Parameters
     ----------
-    target_path: Path
-        Path to store Scryfall files at.
+    config: mtg_pynance.config.Config
+        Configuration defining run conditions.
     """
-    # Set up paths
-    bulk_info_file = Path(target_path) / "bulk_default_info.json"
-    bulk_data_file = Path(target_path) / "bulk_default_data.json"
+    bulk_info_file: Path = config.get_bulk_info_path()
+    bulk_data_file: Path = config.get_bulk_data_path()
 
     # API call to Scryfall for its bulk data default cards information
     scryfall = "https://api.scryfall.com/bulk-data/default-cards"
