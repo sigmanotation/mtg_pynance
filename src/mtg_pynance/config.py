@@ -1,4 +1,6 @@
 from pathlib import Path
+from datetime import datetime
+import json
 
 
 class Config:
@@ -25,6 +27,8 @@ class Config:
 
     def __init__(self, workspace_path: Path, collection_path: Path) -> None:
         self.workspace_path = workspace_path
+        if not collection_path.exists():
+            raise Exception("Collection file does not exist at input path!")
         self.collection_path = collection_path
 
     def create_workspace(self):
@@ -48,3 +52,27 @@ class Config:
         """
         path = self.workspace_path / "bulk_default_data.json"
         return path
+
+    def get_database_path(self) -> Path:
+        """
+        Returns the path of the SQL collection database where each card in
+        the collection has its information stored.
+        """
+        path = self.workspace_path / "collection.db"
+        return path
+
+    def get_bulk_data_timestamp(self) -> datetime | None:
+        """
+        Get timestamp of local bulk data files if they exist or return
+        None if they don't.
+        """
+        if not self.get_bulk_info_path().exists():
+            return None
+
+        # Get timestamp of local files
+        with open(self.get_bulk_info_path()) as f:
+            bulk_info_dict = json.load(f)
+        local_ts = bulk_info_dict["updated_at"]
+        local_dt = datetime.fromisoformat(local_ts)
+
+        return local_dt

@@ -31,12 +31,17 @@ def is_collection_valid(collection: pl.LazyFrame):
         )
 
     # Note that polars seems to default interpret ints as int64
-    schema = {"cid": pl.Int64, "id": pl.String, "foiling": pl.String}
+    schema = {
+        "cid": pl.Int64,
+        "id": pl.String,
+        "foiling": pl.String,
+        "purchase_price": pl.Float64,
+    }
     if collection.schema != schema:
         raise Exception(
             textwrap.fill(
-                f"""Collection ID's, card ID's, and foiling are not of the expected types
-                {schema["cid"]}, {schema["id"]}, and {schema["foiling"]}, respectively. Check collection file!"""
+                f"""Some or all of the required columns in the collection file are not of the correct
+                    data type. The required columns and their data types are {schema}."""
             )
         )
 
@@ -53,6 +58,14 @@ def is_collection_valid(collection: pl.LazyFrame):
     if collection.select(pl.col("id")).count().collect().item() != num_cards:
         raise Exception("Some cards are missing ID's! Check collection file!")
 
+    if (
+        collection.select(pl.col("purchase_price")).count().collect().item()
+        != num_cards
+    ):
+        raise Exception(
+            "Some cards are missing purchase prices! Check collection file!"
+        )
+
 
 def load_collection(collection_path: Path):
     """
@@ -64,7 +77,9 @@ def load_collection(collection_path: Path):
         Path to the card collection csv file.
     """
     collection_lf: pl.LazyFrame = pl.scan_csv(collection_path)
-    collection_lf: pl.LazyFrame = collection_lf.select("cid", "id", "foiling")
+    collection_lf: pl.LazyFrame = collection_lf.select(
+        "cid", "id", "foiling", "purchase_price"
+    )
     is_collection_valid(collection_lf)
 
     return collection_lf

@@ -11,6 +11,7 @@ dependencies = [
     "datetime>=5.5",
     "polars>=0.20.31",
     "numpy>=1.26.4",
+    "tqdm>=4.66.4",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

@@ -1,12 +1,10 @@
-from mtg_pynance.config import Config
-
 from datetime import datetime
 from pathlib import Path
+from tqdm import tqdm
 import requests
-import json
 
 
-def retrieve_database(config: Config):
+def retrieve_bulk_data(bulk_info_file: Path, bulk_data_file: Path, timestamp):
     """
     Write Scryfall's bulk data default cards json file and its information json file
     at the target path. If these files already exist at the target path, they are
@@ -19,27 +17,18 @@ def retrieve_database(config: Config):
     config: mtg_pynance.config.Config
         Configuration defining run conditions.
     """
-    bulk_info_file: Path = config.get_bulk_info_path()
-    bulk_data_file: Path = config.get_bulk_data_path()
-
     # API call to Scryfall for its bulk data default cards information
     scryfall = "https://api.scryfall.com/bulk-data/default-cards"
     bulk_info_r = requests.get(scryfall, params={"format": "json"})
     bulk_info_j = bulk_info_r.json()
 
     # Check if local files exist and are older than Scryfall's
-    if bulk_info_file.exists():
-        # Get timestamp of local file
-        with open(bulk_info_file) as f:
-            bulk_info_dict = json.load(f)
-        local_ts = bulk_info_dict["updated_at"]
-        local_dt = datetime.fromisoformat(local_ts)
-
+    if timestamp is not None:
         # Get Scryfall timestamp
         api_ts = bulk_info_j["updated_at"]
         api_dt = datetime.fromisoformat(api_ts)
 
-        if local_dt >= api_dt:
+        if timestamp >= api_dt:
             return
 
     # Write bulk info file
@@ -47,7 +36,21 @@ def retrieve_database(config: Config):
         f.write(bulk_info_r.content)
 
     # Write bulk data file
+    print("Downloading Scryfall's bulk data default cards file...")
     url = bulk_info_j["download_uri"]
     bulk_data_r = requests.get(url, params={"format": "json"})
-    with open(bulk_data_file, "wb") as file:
-        file.write(bulk_data_r.content)
+    with open(bulk_data_file, "wb") as f:
+        f.write(bulk_data_r.content)
+
+    # TODO the progress bar is nice, but slows it down a lot
+    # url = bulk_info_j["download_uri"]
+    # with requests.get(
+    #     url, params={"format": "json"}, stream=True, headers={"Accept-Encoding": None}
+    # ) as r:
+    #     r.raise_for_status()
+    #     with open(bulk_data_file, "wb") as f:
+    #         pbar = tqdm(total=int(r.headers["Content-Length"]) / 1e6)
+    #         for chunk in r.iter_content(chunk_size=8000):
+    #             if chunk:  # filter out keep-alive new chunks
+    #                 f.write(chunk)
+    #                 pbar.update(len(chunk) / 1e6)
