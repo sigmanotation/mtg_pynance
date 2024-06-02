@@ -5,7 +5,11 @@ description = "Package of tools to record, store, and analyze your Magic the Gat
 authors = [
     {name = "Zach Serikow", email = "76140451+sigmanotation@users.noreply.github.com"},
 ]
-dependencies = []
+dependencies = [
+    "requests>=2.32.3",
+    "pathlib>=1.0.1",
+    "datetime>=5.5",
+]
 requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
