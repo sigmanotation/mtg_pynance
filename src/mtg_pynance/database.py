@@ -69,7 +69,7 @@ def record_card_entry(
     rows = cursor.fetchone()[0]
     if rows == 0:
         sql_command = "insert into 'purchase_price' values (?, ?)"
-        cursor.execute(sql_command, (cid, purchase_price))
+        cursor.execute(sql_command, (str(cid), purchase_price))
 
     # Create card's table in dataframe, if nonexistent
     table_name = "card_" + str(cid)
@@ -127,6 +127,9 @@ def make_collection_db(
                 f"Could not calculate card statistics of card with collection ID {cid}!"
             )
 
+    connection.commit()
+    connection.close()
+
 
 def run_mtg_pynance(config: Config):
     """
@@ -144,7 +147,7 @@ def run_mtg_pynance(config: Config):
     print("Workspace validated.")
 
     # Determine if local bulk data files exist and get their timestamp
-    local_dt: datetime = config.get_bulk_data_timestamp()
+    local_dt: datetime.date = config.get_bulk_data_timestamp()
 
     retrieve_bulk_data(
         config.get_bulk_info_path(), config.get_bulk_data_path(), local_dt

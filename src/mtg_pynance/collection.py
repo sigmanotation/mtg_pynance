@@ -1,5 +1,3 @@
-from mtg_pynance.config import Config
-
 from pathlib import Path
 import polars as pl
 import textwrap
@@ -13,7 +11,7 @@ def is_collection_valid(collection: pl.LazyFrame):
     Parameters
     ----------
     collection: pl.LazyFrame
-        Card collection lazyframe
+        Lazyframe of input collection file.
     """
     num_cards: int = collection.select(pl.count()).collect().item()
 
