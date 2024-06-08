@@ -1,5 +1,5 @@
 from mtg_pynance.config import Config
-from mtg_pynance.statistics import run_mtg_pynance
+from mtg_pynance.database import run_mtg_pynance
 from pathlib import Path
 import time
 

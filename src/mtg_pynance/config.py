@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 import json
 
 
@@ -40,7 +41,7 @@ class Config:
 
     def get_bulk_info_path(self) -> Path:
         """
-        Returns the path of Scryfall's bulk data default cards information
+        Returns the path to Scryfall's bulk data default cards information
         json file.
         """
         path = self.workspace_path / "bulk_default_info.json"
@@ -48,20 +49,20 @@ class Config:
 
     def get_bulk_data_path(self) -> Path:
         """
-        Returns the path of Scryfall's bulk data default cards json file.
+        Returns the path to Scryfall's bulk data default cards json file.
         """
         path = self.workspace_path / "bulk_default_data.json"
         return path
 
     def get_database_path(self) -> Path:
         """
-        Returns the path of the SQL collection database where each card in
+        Returns the path to the SQL collection database where each card in
         the collection has its information stored.
         """
         path = self.workspace_path / "collection.db"
         return path
 
-    def get_bulk_data_timestamp(self) -> datetime | None:
+    def get_bulk_data_timestamp(self) -> Optional[datetime.date]:
         """
         Get timestamp of local bulk data files if they exist or return
         None if they don't.

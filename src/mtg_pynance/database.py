@@ -1,5 +1,5 @@
 from mtg_pynance.config import Config
-from mtg_pynance.database import retrieve_bulk_data
+from mtg_pynance.retrieval import retrieve_bulk_data
 from mtg_pynance.collection import load_collection
 
 from datetime import datetime
@@ -7,10 +7,15 @@ from pathlib import Path
 import polars as pl
 import numpy as np
 import sqlite3
-import json
 
 
-def record_card_entry(bulk_data, collection, cid, timestamp, cursor):
+def record_card_entry(
+    bulk_data: pl.DataFrame,
+    collection: pl.LazyFrame,
+    cid: int,
+    timestamp: datetime.date,
+    cursor: sqlite3.Cursor,
+):
     """
     Calculates card statistics and returns them in a Numpy 1x3 matrix. The 0th element is the card's
     current price, the 1st element is the purchase price, and the 3rd element is the profit.
@@ -19,13 +24,16 @@ def record_card_entry(bulk_data, collection, cid, timestamp, cursor):
 
     Parameters
     ----------
-    bulk_data: Path
-        Path to Scryfall's bulk data default cards json file.
-    collection: Path
-        Path to csv file of collection of cards.
+    bulk_data: pl.DataFrame
+        Dataframe of Scryfall bulk data.
+    collection: pl.LazyFrame
+        Lazyframe of input collection file.
     cid: int
         cid of card in collection file.
-    cursor:
+    timestamp: datetime.date
+        Timestamp of local bulk data files.
+    cursor: sqlite3.Cursor
+        Cursor over the local collection database.
     """
     # Card info from collection file
     id: str = collection.filter(pl.col("cid") == cid).collect().select("id").item()
@@ -76,12 +84,42 @@ def record_card_entry(bulk_data, collection, cid, timestamp, cursor):
     )
 
 
-def make_collection_tables(bulk_data, collection, timestamp, cursor):
-    """ """
+def make_collection_db(
+    database_path: Path,
+    bulk_data: pl.DataFrame,
+    collection: pl.LazyFrame,
+    timestamp: datetime.date,
+):
+    """
+    Makes local collection database where all card price information is stored.
+
+    Parameters
+    ----------
+    database_path: Path
+        Path to SQL collection database.
+    bulk_data: pl.DataFrame
+        Dataframe of Scryfall bulk data.
+    collection: pl.LazyFrame
+        Lazyframe of input collection file.
+    timestamp: datetime.date
+        Timestamp of local bulk data files.
+    """
+    # Connect to local SQL database, if nonexistent
+    connection: sqlite3.Connection = sqlite3.connect(database_path)
+    cursor: sqlite3.Cursor = connection.cursor()
+
+    # Make table of purchase prices, if nonexistent
+    sql_command = (
+        "create table if not exists 'purchase_price' (cid string, price float)"
+    )
+    cursor.execute(sql_command)
+
+    # Record entry for each card in collection
     cid_array: np.ndarray = (
         collection.select(pl.col("cid")).collect().to_numpy().flatten()
     )
     for cid in cid_array:
+        # Catch multitude of possible errors with collection and bulk data files
         try:
             record_card_entry(bulk_data, collection, cid, timestamp, cursor)
         except:
@@ -89,34 +127,18 @@ def make_collection_tables(bulk_data, collection, timestamp, cursor):
                 f"Could not calculate card statistics of card with collection ID {cid}!"
             )
 
-    # # Make table called "collection" in database if it does not exist and add collection statistics
-    # db_table(cursor, "collection", dc_dt)
-    # sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format("collection")
-    # cursor.execute(
-    #     sql_command,
-    #     (
-    #         dc_ts,
-    #         collection_matrix[0],
-    #         collection_matrix[1],
-    #         collection_matrix[2],
-    #         gain_loss_percent,
-    #     ),
-    # )
-
-    # connection.commit()
-    # connection.close()
-
 
 def run_mtg_pynance(config: Config):
     """
-    The main function of mtg pynance. It calculates the card statistics of every card in the collection with the
-    downloaded Scryfall default cards bulk data file and writes the statistics for each card to a table
-    in the created SQL database called "collection_statistics.db". The overall collection statistics are calculated
-    as well and written to a table in the same database. If a table in the database already has an entry with the
-    downloaded default cards file, nothing will be added to it.
+    Main function of mtg_pynance. It creates the workspace, retrieves the bulk data,
+    imports the collection and bulk data files, and records the price information
+    of each card in the collection to the local database.
 
-    Variables:
-        bulk, collection: Polars dataframes. bulk is the Scryfall dataframe and collection is the collection dataframe.
+
+    Parameters
+    ----------
+    collection: Config
+        Configuration to run mtg_pynance with.
     """
     config.create_workspace()
     print("Workspace validated.")
@@ -133,14 +155,5 @@ def run_mtg_pynance(config: Config):
     bulk_data: pl.DataFrame = pl.read_json(config.get_bulk_data_path())
     print("Collection and bulk data files imported.")
 
-    # Connect to local SQL database, making it if it doesn't exist
-    connection: sqlite3.Connection = sqlite3.connect(config.get_database_path())
-    cursor: sqlite3.Cursor = connection.cursor()
-
-    # Make table of purchase prices
-    sql_command = (
-        "create table if not exists 'purchase_price' (cid string, price float)"
-    )
-    cursor.execute(sql_command)
-
-    make_collection_tables(bulk_data, collection, local_dt, cursor)
+    make_collection_db(config.get_database_path(), bulk_data, collection, local_dt)
+    print("The Tolarian Academy has written the record!")

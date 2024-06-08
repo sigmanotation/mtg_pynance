@@ -14,8 +14,12 @@ def retrieve_bulk_data(bulk_info_file: Path, bulk_data_file: Path, timestamp):
 
     Parameters
     ----------
-    config: mtg_pynance.config.Config
-        Configuration defining run conditions.
+    bulk_info_file: Path
+        Path to Scryfall's bulk data information file.
+    bulk_data_file: Path
+        Path to Scryfall's bulk data file.
+    timestamp: datetime.date
+        Timestamp of local bulk data files.
     """
     # API call to Scryfall for its bulk data default cards information
     scryfall = "https://api.scryfall.com/bulk-data/default-cards"
