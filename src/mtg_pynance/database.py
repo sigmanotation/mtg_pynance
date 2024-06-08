@@ -1,56 +1,146 @@
+from mtg_pynance.config import Config
+from mtg_pynance.database import retrieve_bulk_data
+from mtg_pynance.collection import load_collection
+
 from datetime import datetime
 from pathlib import Path
-from tqdm import tqdm
-import requests
+import polars as pl
+import numpy as np
+import sqlite3
+import json
 
 
-def retrieve_bulk_data(bulk_info_file: Path, bulk_data_file: Path, timestamp):
+def record_card_entry(bulk_data, collection, cid, timestamp, cursor):
     """
-    Write Scryfall's bulk data default cards json file and its information json file
-    at the target path. If these files already exist at the target path, they are
-    overwritten if the current files hosted by Scryfall are newer.
+    Calculates card statistics and returns them in a Numpy 1x3 matrix. The 0th element is the card's
+    current price, the 1st element is the purchase price, and the 3rd element is the profit.
 
-    Note that Scryfall uses UTC timestamps.
+    Calculates card statistics, which are its current price, purchase price, and profit.
 
     Parameters
     ----------
-    config: mtg_pynance.config.Config
-        Configuration defining run conditions.
+    bulk_data: Path
+        Path to Scryfall's bulk data default cards json file.
+    collection: Path
+        Path to csv file of collection of cards.
+    cid: int
+        cid of card in collection file.
+    cursor:
     """
-    # API call to Scryfall for its bulk data default cards information
-    scryfall = "https://api.scryfall.com/bulk-data/default-cards"
-    bulk_info_r = requests.get(scryfall, params={"format": "json"})
-    bulk_info_j = bulk_info_r.json()
+    # Card info from collection file
+    id: str = collection.filter(pl.col("cid") == cid).collect().select("id").item()
+    foiling: str = (
+        collection.filter(pl.col("cid") == cid).collect().select("foiling").item()
+    )
+    purchase_price: float = (
+        collection.filter(pl.col("cid") == cid)
+        .collect()
+        .select("purchase_price")
+        .item()
+    )
 
-    # Check if local files exist and are older than Scryfall's
-    if timestamp is not None:
-        # Get Scryfall timestamp
-        api_ts = bulk_info_j["updated_at"]
-        api_dt = datetime.fromisoformat(api_ts)
+    # Card's foil status
+    if foiling == "none":
+        foilkey = "usd"
+    elif foiling == "foil":
+        foilkey = "usd_foil"
+    else:
+        foilkey = "usd_etched"
 
-        if timestamp >= api_dt:
-            return
+    # TODO SQL seems to be slightly faster, should check more
+    # a = bulk_data.row(by_predicate=(pl.col("id") == id), named=True)["prices"][foilkey]
 
-    # Write bulk info file
-    with open(bulk_info_file, "wb") as f:
-        f.write(bulk_info_r.content)
+    # Card's current price from bulk data file
+    current_price = float(
+        bulk_data.sql(f"select prices from self where id = '{id}'").item()[foilkey]
+    )
 
-    # Write bulk data file
-    print("Downloading Scryfall's bulk data default cards file...")
-    url = bulk_info_j["download_uri"]
-    bulk_data_r = requests.get(url, params={"format": "json"})
-    with open(bulk_data_file, "wb") as f:
-        f.write(bulk_data_r.content)
+    # Add card's purchase price to purchase_price table, if nonexistent
+    sql_command = f"select count(*) from 'purchase_price' where cid = {cid}"
+    cursor.execute(sql_command)
+    rows = cursor.fetchone()[0]
+    if rows == 0:
+        sql_command = "insert into 'purchase_price' values (?, ?)"
+        cursor.execute(sql_command, (cid, purchase_price))
 
-    # TODO the progress bar is nice, but slows it down a lot
-    # url = bulk_info_j["download_uri"]
-    # with requests.get(
-    #     url, params={"format": "json"}, stream=True, headers={"Accept-Encoding": None}
-    # ) as r:
-    #     r.raise_for_status()
-    #     with open(bulk_data_file, "wb") as f:
-    #         pbar = tqdm(total=int(r.headers["Content-Length"]) / 1e6)
-    #         for chunk in r.iter_content(chunk_size=8000):
-    #             if chunk:  # filter out keep-alive new chunks
-    #                 f.write(chunk)
-    #                 pbar.update(len(chunk) / 1e6)
+    # Create card's table in dataframe, if nonexistent
+    table_name = "card_" + str(cid)
+    sql_command = f"create table if not exists {table_name} (timestamp STRING, market_value FLOAT)"
+    cursor.execute(sql_command)
+
+    # Insert card statistics into its table in database
+    sql_command = f"insert into {table_name} VALUES (?, ?)"
+    cursor.execute(
+        sql_command,
+        (timestamp, current_price),
+    )
+
+
+def make_collection_tables(bulk_data, collection, timestamp, cursor):
+    """ """
+    cid_array: np.ndarray = (
+        collection.select(pl.col("cid")).collect().to_numpy().flatten()
+    )
+    for cid in cid_array:
+        try:
+            record_card_entry(bulk_data, collection, cid, timestamp, cursor)
+        except:
+            print(
+                f"Could not calculate card statistics of card with collection ID {cid}!"
+            )
+
+    # # Make table called "collection" in database if it does not exist and add collection statistics
+    # db_table(cursor, "collection", dc_dt)
+    # sql_command = """INSERT INTO {} VALUES (?, ?, ?, ?, ?)""".format("collection")
+    # cursor.execute(
+    #     sql_command,
+    #     (
+    #         dc_ts,
+    #         collection_matrix[0],
+    #         collection_matrix[1],
+    #         collection_matrix[2],
+    #         gain_loss_percent,
+    #     ),
+    # )
+
+    # connection.commit()
+    # connection.close()
+
+
+def run_mtg_pynance(config: Config):
+    """
+    The main function of mtg pynance. It calculates the card statistics of every card in the collection with the
+    downloaded Scryfall default cards bulk data file and writes the statistics for each card to a table
+    in the created SQL database called "collection_statistics.db". The overall collection statistics are calculated
+    as well and written to a table in the same database. If a table in the database already has an entry with the
+    downloaded default cards file, nothing will be added to it.
+
+    Variables:
+        bulk, collection: Polars dataframes. bulk is the Scryfall dataframe and collection is the collection dataframe.
+    """
+    config.create_workspace()
+    print("Workspace validated.")
+
+    # Determine if local bulk data files exist and get their timestamp
+    local_dt: datetime = config.get_bulk_data_timestamp()
+
+    retrieve_bulk_data(
+        config.get_bulk_info_path(), config.get_bulk_data_path(), local_dt
+    )
+
+    print("Importing collection and bulk data files...")
+    collection: pl.LazyFrame = load_collection(config.collection_path)
+    bulk_data: pl.DataFrame = pl.read_json(config.get_bulk_data_path())
+    print("Collection and bulk data files imported.")
+
+    # Connect to local SQL database, making it if it doesn't exist
+    connection: sqlite3.Connection = sqlite3.connect(config.get_database_path())
+    cursor: sqlite3.Cursor = connection.cursor()
+
+    # Make table of purchase prices
+    sql_command = (
+        "create table if not exists 'purchase_price' (cid string, price float)"
+    )
+    cursor.execute(sql_command)
+
+    make_collection_tables(bulk_data, collection, local_dt, cursor)

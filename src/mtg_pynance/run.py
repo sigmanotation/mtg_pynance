@@ -6,9 +6,7 @@ import time
 start_time = time.time()
 
 workspace_path = Path("/Users/zachserikow/Desktop/pus")
-collection_path = Path(
-    "/Users/zachserikow/Desktop/code/mtg_pynance_first/collection.csv"
-)
+collection_path = Path("/Users/zachserikow/Desktop/collection.csv")
 
 config = Config(workspace_path, collection_path)
 
