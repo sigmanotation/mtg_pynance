@@ -70,6 +70,9 @@ class Config:
         if not self.get_bulk_info_path().exists():
             return None
 
+        if not self.get_bulk_data_path().exists():
+            return None
+
         # Get timestamp of local files
         with open(self.get_bulk_info_path()) as f:
             bulk_info_dict = json.load(f)

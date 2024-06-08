@@ -80,7 +80,7 @@ def record_card_entry(
     sql_command = f"insert into {table_name} VALUES (?, ?)"
     cursor.execute(
         sql_command,
-        (timestamp, current_price),
+        (timestamp.isoformat(), current_price),
     )
 
 
@@ -113,6 +113,12 @@ def make_collection_db(
         "create table if not exists 'purchase_price' (cid string, price float)"
     )
     cursor.execute(sql_command)
+
+    # # Make table of prices, if nonexistent
+    # sql_command = (
+    #     "create table if not exists 'collection' (timestamp string, market_value float)"
+    # )
+    # cursor.execute(sql_command)
 
     # Record entry for each card in collection
     cid_array: np.ndarray = (
@@ -152,6 +158,9 @@ def run_mtg_pynance(config: Config):
     retrieve_bulk_data(
         config.get_bulk_info_path(), config.get_bulk_data_path(), local_dt
     )
+
+    # Get timestamp of bulk data files
+    local_dt: datetime.date = config.get_bulk_data_timestamp()
 
     print("Importing collection and bulk data files...")
     collection: pl.LazyFrame = load_collection(config.collection_path)
