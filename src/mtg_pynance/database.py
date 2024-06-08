@@ -64,24 +64,30 @@ def record_card_entry(
     )
 
     # Add card's purchase price to purchase_price table, if nonexistent
-    sql_command = f"select count(*) from 'purchase_price' where cid = {cid}"
+    sql_command = f"select count(*) from purchase_price where cid = {cid}"
     cursor.execute(sql_command)
-    rows = cursor.fetchone()[0]
-    if rows == 0:
-        sql_command = "insert into 'purchase_price' values (?, ?)"
+    entries = cursor.fetchone()[0]
+    if entries == 0:
+        sql_command = "insert into purchase_price values (?, ?)"
         cursor.execute(sql_command, (str(cid), purchase_price))
 
     # Create card's table in dataframe, if nonexistent
     table_name = "card_" + str(cid)
-    sql_command = f"create table if not exists {table_name} (timestamp STRING, market_value FLOAT)"
+    sql_command = f"create table if not exists {table_name} (timestamp string, market_value float)"
     cursor.execute(sql_command)
 
-    # Insert card statistics into its table in database
-    sql_command = f"insert into {table_name} VALUES (?, ?)"
-    cursor.execute(
-        sql_command,
-        (timestamp.isoformat(), current_price),
+    # Insert card statistics into its table in database, if nonexistent
+    sql_command = (
+        f"select count(*) from {table_name} where timestamp = '{timestamp.isoformat()}'"
     )
+    cursor.execute(sql_command)
+    entries = cursor.fetchone()[0]
+    if entries == 0:
+        sql_command = f"insert into {table_name} values (?, ?)"
+        cursor.execute(
+            sql_command,
+            (timestamp.isoformat(), current_price),
+        )
 
 
 def make_collection_db(
@@ -109,9 +115,7 @@ def make_collection_db(
     cursor: sqlite3.Cursor = connection.cursor()
 
     # Make table of purchase prices, if nonexistent
-    sql_command = (
-        "create table if not exists 'purchase_price' (cid string, price float)"
-    )
+    sql_command = "create table if not exists purchase_price (cid string, price float)"
     cursor.execute(sql_command)
 
     # # Make table of prices, if nonexistent
