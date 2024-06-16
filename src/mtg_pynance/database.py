@@ -118,12 +118,6 @@ def make_collection_db(
     sql_command = "create table if not exists purchase_price (cid string, price float)"
     cursor.execute(sql_command)
 
-    # # Make table of prices, if nonexistent
-    # sql_command = (
-    #     "create table if not exists 'collection' (timestamp string, market_value float)"
-    # )
-    # cursor.execute(sql_command)
-
     # Record entry for each card in collection
     cid_array: np.ndarray = (
         collection.select(pl.col("cid")).collect().to_numpy().flatten()
@@ -133,9 +127,7 @@ def make_collection_db(
         try:
             record_card_entry(bulk_data, collection, cid, timestamp, cursor)
         except:
-            print(
-                f"Could not calculate card statistics of card with collection ID {cid}!"
-            )
+            print(f"Could not record information of card with collection ID {cid}!")
 
     connection.commit()
     connection.close()
