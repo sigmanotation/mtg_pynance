@@ -1,0 +1,7 @@
+site_name: MTG Pynance
+theme:
+  name: material
+
+plugins:
+- search
+- mkdocstrings
