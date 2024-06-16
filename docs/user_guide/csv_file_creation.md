@@ -1,5 +1,3 @@
-## Create your collection's CSV file
-
 Once you have installed mtg_pynance, the next step is to create a CSV file of the cards in your collection. This is an extremely important step and the following instructions should be read carefully to ensure mtg_pynance can read your file!
 
 mtg_pynance expects the CSV file you feed to it to contain the following four columns with the indicated data types
