@@ -3,5 +3,9 @@ theme:
   name: material
 
 plugins:
-- search
-- mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            allow_inspection: true
+            docstring_style: numpy
