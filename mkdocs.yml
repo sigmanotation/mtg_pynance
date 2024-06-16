@@ -2,6 +2,19 @@ site_name: MTG Pynance
 theme:
   name: material
 
+nav:
+  - Home: index.md
+  - User guide:
+    - Installation: user_guide/installation.md
+    - Getting started: user_guide/getting_started.md
+  - API:
+    - analysis.md
+    - collection.md
+    - config.md
+    - database.md
+    - retrieval.md
+  - Acknowledgemnts: acknowledgements.md
+
 plugins:
   - mkdocstrings:
       handlers:
