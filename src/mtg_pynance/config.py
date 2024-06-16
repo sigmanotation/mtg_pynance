@@ -24,6 +24,10 @@ class Config:
         json file.
     get_bulk_data_path() -> Path
         Returns the path of Scryfall's bulk data default cards json file.
+    get_database_path() -> Path
+        Returns the path to the local SQL collection database.
+    get_bulk_data_timestamp() -> Optional[datetime.date]
+        Get timestamp of local bulk data files.
     """
 
     def __init__(self, workspace_path: Path, collection_path: Path) -> None:

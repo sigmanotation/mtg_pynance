@@ -1,2 +1,1 @@
-## MTG Pynance
 mtg_pynance is a package written in Python to record the value of your Magic the Gathering collection. By providing your collection of cards and a few pieces of information about them, mtg_pynance will create a local SQL database of the price history of each card by pulling its pricing information from Scryfall. mtg_pynance ships with built-in analysis functions to ensure functionality out of the box but, due to its design, allows for a plethora of analysis methods through the creation of your own analysis functions.

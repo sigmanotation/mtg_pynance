@@ -4,7 +4,9 @@ from tqdm import tqdm
 import requests
 
 
-def retrieve_bulk_data(bulk_info_file: Path, bulk_data_file: Path, timestamp):
+def retrieve_bulk_data(
+    bulk_info_file: Path, bulk_data_file: Path, timestamp: datetime.date
+):
     """
     Write Scryfall's bulk data default cards json file and its information json file
     to the target path. If these files already exist at the target path, they are

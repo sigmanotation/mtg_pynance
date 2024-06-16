@@ -12,7 +12,8 @@ dependencies = [
     "polars>=0.20.31",
     "numpy>=1.26.4",
     "tqdm>=4.66.4",
-    "mkdocstrings[python]>=0.25.1",
+    "mkdocstrings-python>=1.10.3",
+    "mkdocs-material>=9.5.27",
 ]
 requires-python = ">=3.12"
 readme = "README.md"

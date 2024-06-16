@@ -1,7 +1,6 @@
 from mtg_pynance.config import Config
 from mtg_pynance.retrieval import retrieve_bulk_data
 from mtg_pynance.collection import load_collection
-
 from datetime import datetime
 from pathlib import Path
 import polars as pl
@@ -17,10 +16,10 @@ def record_card_entry(
     cursor: sqlite3.Cursor,
 ):
     """
-    Calculates card statistics and returns them in a Numpy 1x3 matrix. The 0th element is the card's
-    current price, the 1st element is the purchase price, and the 3rd element is the profit.
-
-    Calculates card statistics, which are its current price, purchase price, and profit.
+    Records a card from the collection csv in the local SQL database. It writes the purchase price
+    and cid of the card to the purchase_price table in the database. It records the card's price and
+    timestamp from the local Scryfall bulk data file to the card's table in the database, making it
+    if it does not exist.
 
     Parameters
     ----------
@@ -142,7 +141,7 @@ def run_mtg_pynance(config: Config):
 
     Parameters
     ----------
-    collection: Config
+    config: mtg_pynance.config.Config
         Configuration to run mtg_pynance with.
     """
     config.create_workspace()
