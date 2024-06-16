@@ -1,6 +1,9 @@
 site_name: MTG Pynance
 theme:
   name: material
+  palette:
+    scheme: slate
+    primary: brown
 
 nav:
   - Home: index.md
