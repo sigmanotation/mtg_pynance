@@ -6,7 +6,7 @@ mtg_pynance requires pip to download it. To install pip, check out the instructi
 ## Installation
 mtg_pynance is recommended to be installed in a virtual environment. For instructions on how to make a virtual environment with Python, check [here](https://docs.python.org/3/library/venv.html). After making it, don't forget to activate it!
 
-With the requirements satisfied and the environment activated, mtg_pynance is installed by 
+With the requirements satisfied and the environment activated, mtg_pynance is installed with the command 
 
 ```console
 pip install mtg_pynance

@@ -1,1 +1,0 @@
-With mtg_pynance installed, its time to start

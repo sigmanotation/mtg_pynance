@@ -7,9 +7,11 @@ theme:
 
 nav:
   - Home: index.md
+  - How does it work?: explanation.md
+  - Installation: installation.md
   - User guide:
     - Installation: user_guide/installation.md
-    - Getting started: user_guide/getting_started.md
+    - Create your collection's CSV file: user_guide/csv_file_creation.md
   - API:
     - analysis.md
     - collection.md
