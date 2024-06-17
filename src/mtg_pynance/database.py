@@ -51,7 +51,7 @@ def record_card_entry(
         foilkey = "usd"
     elif foiling == "foil":
         foilkey = "usd_foil"
-    else:
+    elif foiling == "etched":
         foilkey = "usd_etched"
 
     # TODO SQL seems to be slightly faster, should check more

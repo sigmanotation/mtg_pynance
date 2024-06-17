@@ -11,13 +11,14 @@ nav:
   - Installation: installation.md
   - User guide:
     - Create your collection's CSV file: user_guide/csv_file_creation.md
+    - Make the run file: user_guide/run_file_creation.md
   - API:
     - Analysis: api/analysis.md
     - Collection: api/collection.md
     - Config: api/config.md
     - Database: api/database.md
     - Retrieval: api/retrieval.md
-  - Acknowledgemnts: acknowledgements.md
+  - Acknowledgements: acknowledgements.md
 
 plugins:
   - mkdocstrings:
@@ -26,3 +27,14 @@ plugins:
           options:
             allow_inspection: true
             docstring_style: numpy
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
