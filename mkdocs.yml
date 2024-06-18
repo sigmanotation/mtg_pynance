@@ -4,6 +4,9 @@ theme:
   palette:
     scheme: slate
     primary: brown
+  
+extra_css:
+  - style_sheets/extra.css
 
 nav:
   - Home: index.md
@@ -12,6 +15,7 @@ nav:
   - User guide:
     - Create your collection's CSV file: user_guide/csv_file_creation.md
     - Make the run file: user_guide/run_file_creation.md
+    - Analyze your collection: user_guide/collection_analysis.md
   - API:
     - Analysis: api/analysis.md
     - Collection: api/collection.md
@@ -29,8 +33,6 @@ plugins:
             docstring_style: numpy
 
 markdown_extensions:
-  - pymdownx.arithmatex:
-      generic: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
