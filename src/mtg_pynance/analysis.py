@@ -45,7 +45,7 @@ def collection_stats(database_path: Path):
         schema={
             "timestamp": pl.String,
             "market_value": pl.Float64,
-            "profit": pl.Float64,
+            "gain/loss": pl.Float64,
         },
     )
 
@@ -63,6 +63,6 @@ def pull(database_path):
     cursor: sqlite3.Cursor = connection.cursor()
 
     # Calculate market value of all cards
-    sql_command = "select * from card_457"
+    sql_command = "select * from card_574"
     result = cursor.execute(sql_command).fetchall()
     print(result)
