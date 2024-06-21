@@ -51,7 +51,7 @@ def collection_stats(database_path: Path):
 
     # Add together cards that have the same timestamp
     df = df.group_by("timestamp").agg(
-        pl.col("market_value").sum(), pl.col("profit").sum()
+        pl.col("market_value").sum(), pl.col("gain/loss").sum()
     )
 
     return df
