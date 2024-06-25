@@ -63,30 +63,20 @@ def record_card_entry(
     )
 
     # Add card's purchase price to purchase_price table, if nonexistent
-    sql_command = f"select count(*) from purchase_price where cid = {cid}"
-    cursor.execute(sql_command)
-    entries = cursor.fetchone()[0]
-    if entries == 0:
-        sql_command = "insert into purchase_price values (?, ?)"
-        cursor.execute(sql_command, (str(cid), purchase_price))
+    sql_command = "insert or ignore into purchase_price values (?, ?)"
+    cursor.execute(sql_command, (str(cid), purchase_price))
 
     # Create card's table in dataframe, if nonexistent
     table_name = "card_" + str(cid)
-    sql_command = f"create table if not exists {table_name} (timestamp string, market_value float)"
+    sql_command = f"create table if not exists {table_name} (timestamp string unique, market_value float)"
     cursor.execute(sql_command)
 
-    # Insert card statistics into its table in database, if nonexistent
-    sql_command = (
-        f"select count(*) from {table_name} where timestamp = '{timestamp.isoformat()}'"
+    # Insert card statistics into its table, if nonexistent
+    sql_command = f"insert or ignore into {table_name} values (?, ?)"
+    cursor.execute(
+        sql_command,
+        (timestamp.isoformat(), current_price),
     )
-    cursor.execute(sql_command)
-    entries = cursor.fetchone()[0]
-    if entries == 0:
-        sql_command = f"insert into {table_name} values (?, ?)"
-        cursor.execute(
-            sql_command,
-            (timestamp.isoformat(), current_price),
-        )
 
 
 def make_collection_db(
@@ -114,7 +104,9 @@ def make_collection_db(
     cursor: sqlite3.Cursor = connection.cursor()
 
     # Make table of purchase prices, if nonexistent
-    sql_command = "create table if not exists purchase_price (cid string, price float)"
+    sql_command = (
+        "create table if not exists purchase_price (cid string unique, price float)"
+    )
     cursor.execute(sql_command)
 
     # Record entry for each card in collection

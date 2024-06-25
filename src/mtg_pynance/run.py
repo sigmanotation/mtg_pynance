@@ -1,6 +1,6 @@
 from mtg_pynance.config import Config
 from mtg_pynance.database import run_mtg_pynance
-from mtg_pynance.analysis import collection_stats, pull
+from mtg_pynance.analysis import collection_stats, pull, delete
 from pathlib import Path
 import time
 
@@ -13,6 +13,10 @@ config = Config(workspace_path, collection_path)
 
 run_mtg_pynance(config)
 
-# collection_stats(config.get_database_path())
+ab = collection_stats(config.get_database_path())
+print(ab)
+
+# pull(config.get_database_path())
+# delete(config.get_database_path())
 
 print("--- %s seconds ---" % (time.time() - start_time))

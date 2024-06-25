@@ -62,7 +62,24 @@ def pull(database_path):
     connection: sqlite3.Connection = sqlite3.connect(database_path)
     cursor: sqlite3.Cursor = connection.cursor()
 
-    # Calculate market value of all cards
-    sql_command = "select * from card_574"
-    result = cursor.execute(sql_command).fetchall()
-    print(result)
+    # # Calculate market value of all cards
+    # sql_command = "select * from card_0"
+    # result = cursor.execute(sql_command).fetchall()
+
+    sql_command = "select * from purchase_price"
+    card_id_db = cursor.execute(sql_command).fetchall()
+    for x in card_id_db:
+        print(x)
+    print(len(card_id_db))
+
+    # print(result)
+
+
+def delete(database_path):
+    # Connect to local SQL database
+    connection: sqlite3.Connection = sqlite3.connect(database_path)
+    cursor: sqlite3.Cursor = connection.cursor()
+
+    sql_command = """DROP TABLE purchase_price"""
+    cursor.execute(sql_command)
+    connection.close()
