@@ -118,6 +118,53 @@ def collection_extrema(database_path: Path):
     return gain, loss
 
 
+def collection_largest_movers(database_path: Path):
+    """ """
+    # Connect to local SQL database
+    connection: sqlite3.Connection = sqlite3.connect(database_path)
+    cursor: sqlite3.Cursor = connection.cursor()
+
+    # Get list of all cards
+    sql_command = "select * from purchase_price"
+    card_id_db = cursor.execute(sql_command).fetchall()
+
+    gain = {"cid": [], "gain": 0.0, "purchase_price": 0.0}
+    loss = {"cid": [], "loss": 0.0, "purchase_price": 0.0}
+
+    for _, (cid, purchase_price) in enumerate(card_id_db):
+        sql_command = f"""select market_value - lag(market_value) over (order by timestamp) 
+                          from card_{cid} order by timestamp desc limit 1"""
+        result = cursor.execute(sql_command).fetchone()[0]
+
+        if result is None:
+            continue
+
+        movement = round(result, 2)
+
+        # Record card's gain/loss if it is an extreme
+        if movement == gain["gain"]:
+            gain["cid"].append(cid)
+
+        if movement > gain["gain"]:
+            gain["cid"].clear()
+            gain["cid"].append(cid)
+            gain["gain"] = movement
+            gain["purchase_price"] = purchase_price
+
+        if movement == loss["loss"]:
+            loss["cid"].append(cid)
+
+        if movement < loss["loss"]:
+            loss["cid"].clear()
+            loss["cid"].append(cid)
+            loss["loss"] = movement
+            loss["purchase_price"] = purchase_price
+
+    connection.close()
+
+    return gain, loss
+
+
 def pull(database_path):
     # Connect to local SQL database
     connection: sqlite3.Connection = sqlite3.connect(database_path)
