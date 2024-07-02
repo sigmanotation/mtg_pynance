@@ -35,7 +35,7 @@ def is_collection_valid(collection: pl.LazyFrame):
         "foiling": pl.String,
         "purchase_price": pl.Float64,
     }
-    if collection.schema != schema:
+    if collection.collect_schema() != schema:
         raise Exception(
             textwrap.fill(
                 f"""Some or all of the required columns in the collection file are not of the correct
