@@ -5,15 +5,16 @@ After executing the run file, the only thing that remains is to analyze your col
 
 For this example, we use a Jupyter notebook and the Plotly library. To install Jupyter, see [here](https://jupyter.org/). For Plotly, check [this](https://plotly.com/python/) out.
 
-mtg_pynance comes with the built-in analysis function `#!python collection_stats` to compute your collection's total value and gain/loss as a function of time. Make a Jupyter file and paste the below code into a cell in the file.
+mtg_pynance comes with the built-in analysis function `#!python collection_stats` to compute your collection's total value and gain/loss as a function of time. Make a Jupyter file and paste each block of the below code into its own cell in the file.
 
 ```python
 from mtg_pynance.config import Config
 from mtg_pynance.analysis import collection_stats
 from pathlib import Path
-import plotly.express as px
-
-
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+```
+```python
 workspace_path = Path("/to/your/workspace/directory")
 collection_path = Path("/to/your/collection/csv/file")
 
@@ -26,9 +27,20 @@ Run the notebook, noting that we have stored the results of `#!python collection
 In a subsequent cell, paste the code below.
 
 ```python
-fig = px.scatter(df, x='timestamp', y='gain_loss', labels={'timestamp': 'Time (UTC)', 'gain_loss': 'Gain/loss (USD)'})
-fig.update_traces(mode='markers+lines', hovertemplate=None)
-fig.show()
+dfd = df.to_dict(as_series=False)
+
+fig = make_subplots()
+fig.add_trace(
+    go.Scatter(
+        x=dfd['timestamp'],
+        y=dfd['gain/loss'], 
+        mode='lines+markers',
+    )
+)
+fig.update_layout(
+    xaxis_title="Time (UTC)",
+    yaxis_title="Gain/loss (USD)",
+)
 ```
 
 Running this cell produces a graph of your collection's gain/loss as a function of time! Some easy modifications to this plotting code allow you to plot your collection's value versus time as well.

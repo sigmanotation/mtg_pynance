@@ -48,12 +48,17 @@ def collection_stats(database_path: Path):
             "market_value": pl.Float64,
             "gain/loss": pl.Float64,
         },
+        orient="row",
     )
 
     # Add together cards that have the same timestamp
     df = df.group_by("timestamp").agg(
         pl.col("market_value").sum(), pl.col("gain/loss").sum()
     )
+
+    # TODO ensure that this will always sort correctly because the timestampsa are strings
+    # Sort dataframe from earliest to latest timestamps
+    df = df.sort("timestamp")
 
     return df
 
@@ -92,7 +97,7 @@ def collection_extrema(database_path: Path):
         sql_command = f"select market_value from card_{cid} where timestamp=(select max(timestamp) from card_{cid})"
         current_price = cursor.execute(sql_command).fetchone()[0]
         # Calculate gain/loss of each card with respect to current price
-        gain_loss = current_price - purchase_price
+        gain_loss = round(current_price - purchase_price, 2)
 
         # Record card's gain/loss if it is an extreme
         if gain_loss == gain["gain"]:
