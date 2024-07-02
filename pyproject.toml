@@ -1,6 +1,6 @@
 [project]
 name = "mtg_pynance"
-version = "0.1.0"
+version = "0.1.1"
 description = "Package of tools to record, store, and analyze your Magic the Gathering collection."
 authors = [
     {name = "Zach Serikow", email = "76140451+sigmanotation@users.noreply.github.com"},
