@@ -3,7 +3,7 @@ After executing the run file, the only thing that remains is to analyze your col
 ## Example
 ### Calculating your collection's gain/loss
 
-For this example, we use a Jupyter notebook and the Plotly library. To install Jupyter, see [here](https://jupyter.org/). For Plotly, check [this](https://plotly.com/python/) out.
+For this example, we use a Jupyter notebook and the Plotly library. To install Jupyter, see [here](https://jupyter.org/). For Plotly, check [this](https://plotly.com/python/) out. Note that you will also have to install
 
 mtg_pynance comes with the built-in analysis function `#!python collection_stats` to compute your collection's total value and gain/loss as a function of time. Make a Jupyter file and paste each block of the below code into its own cell in the file.
 
