@@ -3,8 +3,8 @@
 After you have made your collection's CSV file, it is time to run mtg_pynance! To do this, we create a simple Python script that imports the needed objects from the mtg_pynance library as shown below.
 
 ```python
-from mtg_pynance.config import Config
-from mtg_pynance.database import run_mtg_pynance
+from mtg_pynance import Config
+from mtg_pynance import run_mtg_pynance
 from pathlib import Path
 
 

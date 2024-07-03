@@ -8,8 +8,8 @@ For this example, we use a Jupyter notebook and the Plotly library. To install J
 mtg_pynance comes with the built-in analysis function `#!python collection_stats` to compute your collection's total value and gain/loss as a function of time. Make a Jupyter file and paste each block of the below code into its own cell in the file.
 
 ```python
-from mtg_pynance.config import Config
-from mtg_pynance.analysis import collection_stats
+from mtg_pynance import Config
+from mtg_pynance import collection_stats
 from pathlib import Path
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go

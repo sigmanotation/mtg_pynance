@@ -22,7 +22,7 @@ nav:
     - Analysis: api/analysis.md
     - Collection: api/collection.md
     - Config: api/config.md
-    - Database: api/database.md
+    - Core: api/core.md
     - Retrieval: api/retrieval.md
   - Acknowledgements: acknowledgements.md
 

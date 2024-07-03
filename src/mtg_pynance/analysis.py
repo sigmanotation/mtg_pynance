@@ -1,7 +1,6 @@
 from pathlib import Path
 import sqlite3
 import polars as pl
-import numpy as np
 
 
 def collection_stats(database_path: Path):
