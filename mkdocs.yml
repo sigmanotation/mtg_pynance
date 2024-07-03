@@ -1,4 +1,5 @@
 site_name: mtg_pynance
+repo_url: https://github.com/sigmanotation/mtg_pynance
 theme:
   name: material
   palette:
