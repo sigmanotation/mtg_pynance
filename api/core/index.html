@@ -20,7 +20,7 @@
     
     
       
-        <title>Database - mtg_pynance</title>
+        <title>Core - mtg_pynance</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mtg_pynance.database" class="md-skip">
+        <a href="#mtg_pynance.core" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Database
+              Core
             
           </span>
         </div>
@@ -487,7 +487,7 @@
           
   
   <span class="md-ellipsis">
-    Database
+    Core
   </span>
   
 
@@ -498,7 +498,7 @@
         
   
   <span class="md-ellipsis">
-    Database
+    Core
   </span>
   
 
@@ -518,16 +518,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database" class="md-nav__link">
+  <a href="#mtg_pynance.core" class="md-nav__link">
     <span class="md-ellipsis">
-      database
+      core
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.make_collection_db" class="md-nav__link">
+  <a href="#mtg_pynance.core.make_collection_db" class="md-nav__link">
     <span class="md-ellipsis">
       make_collection_db
     </span>
@@ -536,7 +536,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.record_card_entry" class="md-nav__link">
+  <a href="#mtg_pynance.core.record_card_entry" class="md-nav__link">
     <span class="md-ellipsis">
       record_card_entry
     </span>
@@ -545,7 +545,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.run_mtg_pynance" class="md-nav__link">
+  <a href="#mtg_pynance.core.run_mtg_pynance" class="md-nav__link">
     <span class="md-ellipsis">
       run_mtg_pynance
     </span>
@@ -635,16 +635,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database" class="md-nav__link">
+  <a href="#mtg_pynance.core" class="md-nav__link">
     <span class="md-ellipsis">
-      database
+      core
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.make_collection_db" class="md-nav__link">
+  <a href="#mtg_pynance.core.make_collection_db" class="md-nav__link">
     <span class="md-ellipsis">
       make_collection_db
     </span>
@@ -653,7 +653,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.record_card_entry" class="md-nav__link">
+  <a href="#mtg_pynance.core.record_card_entry" class="md-nav__link">
     <span class="md-ellipsis">
       record_card_entry
     </span>
@@ -662,7 +662,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mtg_pynance.database.run_mtg_pynance" class="md-nav__link">
+  <a href="#mtg_pynance.core.run_mtg_pynance" class="md-nav__link">
     <span class="md-ellipsis">
       run_mtg_pynance
     </span>
@@ -688,13 +688,13 @@
   
 
 
-  <h1>Database</h1>
+  <h1>Core</h1>
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="mtg_pynance.database"></a>
+<a id="mtg_pynance.core"></a>
     <div class="doc doc-contents first">
 
 
@@ -712,7 +712,7 @@
 <div class="doc doc-object doc-function">
 
 
-<h2 id="mtg_pynance.database.make_collection_db" class="doc doc-heading">
+<h2 id="mtg_pynance.core.make_collection_db" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">make_collection_db</span><span class="p">(</span><span class="n">database_path</span><span class="p">,</span> <span class="n">bulk_data</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span></code>
 
 </h2>
@@ -794,7 +794,7 @@
     </table>
 
             <details class="quote">
-              <summary>Source code in <code>src/mtg_pynance/database.py</code></summary>
+              <summary>Source code in <code>src/mtg_pynance/core.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
 <span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
 <span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
@@ -889,7 +889,7 @@
 <div class="doc doc-object doc-function">
 
 
-<h2 id="mtg_pynance.database.record_card_entry" class="doc doc-heading">
+<h2 id="mtg_pynance.core.record_card_entry" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">record_card_entry</span><span class="p">(</span><span class="n">bulk_data</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">cid</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">cursor</span><span class="p">)</span></code>
 
 </h2>
@@ -988,7 +988,7 @@ if it does not exist.</p>
     </table>
 
             <details class="quote">
-              <summary>Source code in <code>src/mtg_pynance/database.py</code></summary>
+              <summary>Source code in <code>src/mtg_pynance/core.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11">11</a></span>
 <span class="normal"><a href="#__codelineno-0-12">12</a></span>
 <span class="normal"><a href="#__codelineno-0-13">13</a></span>
@@ -1135,7 +1135,7 @@ if it does not exist.</p>
 <div class="doc doc-object doc-function">
 
 
-<h2 id="mtg_pynance.database.run_mtg_pynance" class="doc doc-heading">
+<h2 id="mtg_pynance.core.run_mtg_pynance" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">run_mtg_pynance</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></code>
 
 </h2>
@@ -1177,7 +1177,7 @@ of each card in the collection to the local database.</p>
     </table>
 
             <details class="quote">
-              <summary>Source code in <code>src/mtg_pynance/database.py</code></summary>
+              <summary>Source code in <code>src/mtg_pynance/core.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-127">127</a></span>
 <span class="normal"><a href="#__codelineno-0-128">128</a></span>
 <span class="normal"><a href="#__codelineno-0-129">129</a></span>
