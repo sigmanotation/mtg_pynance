@@ -9,7 +9,7 @@ mtg_pynance comes with the built-in analysis function `#!python collection_stats
 
 ```python
 from mtg_pynance import Config
-from mtg_pynance import collection_stats
+from mtg_pynance.analysis import collection_stats
 from pathlib import Path
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
