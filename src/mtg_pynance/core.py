@@ -1,4 +1,5 @@
 from mtg_pynance.config import Config
+from mtg_pynance.logger import make_logger, logger_error
 from mtg_pynance.retrieval import retrieve_bulk_data
 from mtg_pynance.collection import load_collection
 from datetime import datetime
@@ -6,6 +7,8 @@ from pathlib import Path
 import polars as pl
 import numpy as np
 import sqlite3
+
+FOIL_TYPE = {"none": "usd", "foil": "usd_foil", "etched": "usd_etched"}
 
 
 def record_card_entry(
@@ -46,21 +49,26 @@ def record_card_entry(
         .item()
     )
 
-    # Card's foil status
-    if foiling == "none":
-        foilkey = "usd"
-    elif foiling == "foil":
-        foilkey = "usd_foil"
-    elif foiling == "etched":
-        foilkey = "usd_etched"
-
     # TODO SQL seems to be slightly faster, should check more
     # a = bulk_data.row(by_predicate=(pl.col("id") == id), named=True)["prices"][foilkey]
 
-    # Card's current price from bulk data file
-    current_price = float(
-        bulk_data.sql(f"select prices from self where id = '{id}'").item()[foilkey]
-    )
+    # Retrieve card's data from bulk data file
+    try:
+        card_data = bulk_data.sql(f"select prices from self where id = '{id}'").item()
+    except:
+        logger_error(
+            __name__, f"Collection ID {cid}: Scryfall ID does not exist in database!"
+        )
+        return
+
+    # Retrieve card's price
+    current_price = card_data[FOIL_TYPE[foiling]]
+    if current_price is None:
+        logger_error(
+            __name__,
+            f"Collection ID {cid}: Foil type has no price in database!",
+        )
+        return
 
     # Add card's purchase price to purchase_price table, if nonexistent
     sql_command = "insert or ignore into purchase_price values (?, ?)"
@@ -114,11 +122,11 @@ def make_collection_db(
         collection.select(pl.col("cid")).collect().to_numpy().flatten()
     )
     for cid in cid_array:
-        # Catch multitude of possible errors with collection and bulk data files
-        try:
-            record_card_entry(bulk_data, collection, cid, timestamp, cursor)
-        except:
-            print(f"Could not record information of card with collection ID {cid}!")
+        # # Catch multitude of possible errors with collection and bulk data files
+        # try:
+        record_card_entry(bulk_data, collection, cid, timestamp, cursor)
+        # except:
+        #     print(f"Could not record information of card with collection ID {cid}!")
 
     connection.commit()
     connection.close()
@@ -138,6 +146,9 @@ def run_mtg_pynance(config: Config):
     """
     config.create_workspace()
     print("Workspace validated.")
+
+    make_logger(config.workspace_path)
+    print("Logger initialized.")
 
     # Determine if local bulk data files exist and get their timestamp
     local_dt: datetime.date = config.get_bulk_data_timestamp()
