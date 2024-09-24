@@ -3,7 +3,7 @@ import sqlite3
 import polars as pl
 
 
-def collection_stats(database_path: Path):
+def collection_stats(database_path: Path) -> pl.DataFrame:
     """
     Calculates the market value and gain/loss of the entire collection of cards
     in the local SQL database at the timestamps the prices were recorded.
@@ -62,7 +62,7 @@ def collection_stats(database_path: Path):
     return df
 
 
-def collection_extrema(database_path: Path):
+def collection_extrema(database_path: Path) -> tuple[dict, dict]:
     """
     Calculates the cards in the collection that currently have the largest gain
     and loss.
@@ -74,7 +74,7 @@ def collection_extrema(database_path: Path):
 
     Returns
     -------
-    tuple(dict[], dict[])
+    tuple[dict, dict]
         Return a tuple of dictionaries where element 0 corresponds to the card
         with the maximum gain and element 1 corresponds to the card with the
         maximum loss. The schema for each dictionary is {"cid": [int], "*": float,
@@ -122,8 +122,24 @@ def collection_extrema(database_path: Path):
     return gain, loss
 
 
-def collection_largest_movers(database_path: Path):
-    """ """
+def collection_largest_movers(database_path: Path) -> tuple[dict, dict]:
+    """
+    Calculates the price movement of each card based on its two most recently recorded
+    prices and returns the cards that have the largest and smallest price movement.
+
+    Parameters
+    ----------
+    database_path: Path
+        Path to the local SQL collection database.
+
+    Returns
+    -------
+    tuple[dict, dict]
+        Return a tuple of dictionaries where element 0 corresponds to the card
+        with the maximum gain and element 1 corresponds to the card with the
+        maximum loss. The schema for each dictionary is {"cid": [int], "*": float,
+        "purchase_price": float} where * is "gain" or "loss", respectively.
+    """
     # Connect to local SQL database
     connection: sqlite3.Connection = sqlite3.connect(database_path)
     cursor: sqlite3.Cursor = connection.cursor()
@@ -187,11 +203,28 @@ def pull(database_path):
     # print(result)
 
 
-def delete(database_path):
+def delete_card(database_path: Path, cid: int):
+    """
+    Deletes card from local SQL database. This includes its
+    price table and its purchase price information.
+
+    Parameters
+    ----------
+    database_path: Path
+        Path to the local SQL collection database.
+    cid: int
+        cid of card in collection file.
+    """
     # Connect to local SQL database
     connection: sqlite3.Connection = sqlite3.connect(database_path)
     cursor: sqlite3.Cursor = connection.cursor()
 
-    sql_command = """DROP TABLE purchase_price"""
+    # Delete card's price table from database
+    sql_command = f"""drop table card_{cid}"""
     cursor.execute(sql_command)
+
+    # Delete card's purchase price
+    sql_command = f"""delete from purchase_price where id = {cid}"""
+    cursor.execute(sql_command)
+
     connection.close()

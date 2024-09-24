@@ -52,21 +52,21 @@ def record_card_entry(
     # TODO SQL seems to be slightly faster, should check more
     # a = bulk_data.row(by_predicate=(pl.col("id") == id), named=True)["prices"][foilkey]
 
-    # Retrieve card's data from bulk data file
-    try:
-        card_data = bulk_data.sql(f"select prices from self where id = '{id}'").item()
-    except:
+    # Retrieve card's price data from bulk data file
+    price_df: pl.DataFrame = bulk_data.sql(f"select prices from self where id = '{id}'")
+    if price_df.height == 0:
         logger_error(
-            __name__, f"Collection ID {cid}: Scryfall ID does not exist in database!"
+            __name__, f"Collection ID {cid}: ID does not exist in Scryfall database!"
         )
         return
+    price_dict: dict[str, float] = price_df.item()
 
     # Retrieve card's price
-    current_price = card_data[FOIL_TYPE[foiling]]
+    current_price = price_dict[FOIL_TYPE[foiling]]
     if current_price is None:
         logger_error(
             __name__,
-            f"Collection ID {cid}: Foil type has no price in database!",
+            f"Collection ID {cid}: Foil type has no price in Scryfall database!",
         )
         return
 
@@ -122,11 +122,7 @@ def make_collection_db(
         collection.select(pl.col("cid")).collect().to_numpy().flatten()
     )
     for cid in cid_array:
-        # # Catch multitude of possible errors with collection and bulk data files
-        # try:
         record_card_entry(bulk_data, collection, cid, timestamp, cursor)
-        # except:
-        #     print(f"Could not record information of card with collection ID {cid}!")
 
     connection.commit()
     connection.close()
