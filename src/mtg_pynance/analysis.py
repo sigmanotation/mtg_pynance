@@ -1,12 +1,60 @@
 from pathlib import Path
+from typing import Optional
 import sqlite3
 import polars as pl
+
+
+def card_stats(database_path: Path, cid: int) -> pl.DataFrame:
+    """
+    Calculates the market value and gain/loss of the input card using the
+    timestamps the prices were recorded in the local SQL database.
+
+    Parameters
+    ----------
+    database_path: Path
+        Path to the local SQL collection database.
+    cid: int
+        cid of card in collection file.
+
+    Returns
+    -------
+    pl.DataFrame
+        Returns dataframe with schema {"timestamp": pl.String,
+        "market_value": pl.Float64, "profit": pl.Float64}.
+    """
+    # Connect to local SQL database
+    connection: sqlite3.Connection = sqlite3.connect(database_path)
+    cursor: sqlite3.Cursor = connection.cursor()
+
+    # Get card's purchase price
+    sql_command = f"select price from purchase_price where cid = {cid}"
+    purchase_price = float(cursor.execute(sql_command).fetchone()[0])
+
+    # Get card's price data
+    sql_command = f"select * from card_{cid}"
+    price_data: list[tuple[str, float]] = cursor.execute(sql_command).fetchall()
+    card_stats = [
+        [timestamp, value, value - purchase_price] for timestamp, value in price_data
+    ]
+
+    # Convert stats from list of lists to dataframe
+    df = pl.DataFrame(
+        card_stats,
+        schema={
+            "timestamp": pl.String,
+            "market_value": pl.Float64,
+            "gain/loss": pl.Float64,
+        },
+        orient="row",
+    )
+
+    return df
 
 
 def collection_stats(database_path: Path) -> pl.DataFrame:
     """
     Calculates the market value and gain/loss of the entire collection of cards
-    in the local SQL database at the timestamps the prices were recorded.
+    at the timestamps the prices were recorded in the local SQL database.
 
     Parameters
     ----------
@@ -25,13 +73,13 @@ def collection_stats(database_path: Path) -> pl.DataFrame:
 
     # Get list of all cards
     sql_command = "select * from purchase_price"
-    card_id_db = cursor.execute(sql_command).fetchall()
+    card_ids: list[tuple[int, float]] = cursor.execute(sql_command).fetchall()
     collection_stats: list[list[str, float, float]] = []
 
     # Record stats for each card in the local database
-    for _, (cid, purchase_price) in enumerate(card_id_db):
+    for _, (cid, purchase_price) in enumerate(card_ids):
         sql_command = f"select * from card_{cid}"
-        result = cursor.execute(sql_command).fetchall()
+        result: list[tuple[str, float]] = cursor.execute(sql_command).fetchall()
         card_stats = [
             [timestamp, value, value - purchase_price] for timestamp, value in result
         ]
@@ -39,7 +87,7 @@ def collection_stats(database_path: Path) -> pl.DataFrame:
 
     connection.close()
 
-    # Convert stats from list of lists to dataframe
+    # Convert statistics from list of lists to dataframe
     df = pl.DataFrame(
         collection_stats,
         schema={
@@ -87,15 +135,15 @@ def collection_extrema(database_path: Path) -> tuple[dict, dict]:
 
     # Get list of all cards
     sql_command = "select * from purchase_price"
-    card_id_db = cursor.execute(sql_command).fetchall()
+    card_ids: list[tuple[int, float]] = cursor.execute(sql_command).fetchall()
 
     gain = {"cid": [], "gain": 0.0, "purchase_price": 0.0}
     loss = {"cid": [], "loss": 0.0, "purchase_price": 0.0}
 
-    for _, (cid, purchase_price) in enumerate(card_id_db):
-        sql_command = f"select market_value from card_{cid} where timestamp=(select max(timestamp) from card_{cid})"
-        current_price = cursor.execute(sql_command).fetchone()[0]
+    for _, (cid, purchase_price) in enumerate(card_ids):
         # Calculate gain/loss of each card with respect to current price
+        sql_command = f"select market_value from card_{cid} where timestamp = (select max(timestamp) from card_{cid})"
+        current_price = float(cursor.execute(sql_command).fetchone()[0])
         gain_loss = round(current_price - purchase_price, 2)
 
         # Record card's gain/loss if it is an extreme
@@ -146,15 +194,15 @@ def collection_largest_movers(database_path: Path) -> tuple[dict, dict]:
 
     # Get list of all cards
     sql_command = "select * from purchase_price"
-    card_id_db = cursor.execute(sql_command).fetchall()
+    card_ids: list[tuple[int, float]] = cursor.execute(sql_command).fetchall()
 
     gain = {"cid": [], "gain": 0.0, "purchase_price": 0.0}
     loss = {"cid": [], "loss": 0.0, "purchase_price": 0.0}
 
-    for _, (cid, purchase_price) in enumerate(card_id_db):
+    for _, (cid, purchase_price) in enumerate(card_ids):
         sql_command = f"""select market_value - lag(market_value) over (order by timestamp) 
                           from card_{cid} order by timestamp desc limit 1"""
-        result = cursor.execute(sql_command).fetchone()[0]
+        result: Optional[float] = cursor.execute(sql_command).fetchone()[0]
 
         if result is None:
             continue
@@ -183,24 +231,6 @@ def collection_largest_movers(database_path: Path) -> tuple[dict, dict]:
     connection.close()
 
     return gain, loss
-
-
-def pull(database_path):
-    # Connect to local SQL database
-    connection: sqlite3.Connection = sqlite3.connect(database_path)
-    cursor: sqlite3.Cursor = connection.cursor()
-
-    # # Calculate market value of all cards
-    # sql_command = "select * from card_0"
-    # result = cursor.execute(sql_command).fetchall()
-
-    sql_command = "select * from purchase_price"
-    card_id_db = cursor.execute(sql_command).fetchall()
-    for x in card_id_db:
-        print(x)
-    print(len(card_id_db))
-
-    # print(result)
 
 
 def delete_card(database_path: Path, cid: int):

@@ -2,6 +2,7 @@ from mtg_pynance.config import Config
 from mtg_pynance.logger import make_logger, logger_error
 from mtg_pynance.retrieval import retrieve_bulk_data
 from mtg_pynance.collection import load_collection
+from typing import Optional
 from datetime import datetime
 from pathlib import Path
 import polars as pl
@@ -62,7 +63,7 @@ def record_card_entry(
     price_dict: dict[str, float] = price_df.item()
 
     # Retrieve card's price
-    current_price = price_dict[FOIL_TYPE[foiling]]
+    current_price: Optional[float] = price_dict[FOIL_TYPE[foiling]]
     if current_price is None:
         logger_error(
             __name__,
@@ -72,7 +73,7 @@ def record_card_entry(
 
     # Add card's purchase price to purchase_price table, if nonexistent
     sql_command = "insert or ignore into purchase_price values (?, ?)"
-    cursor.execute(sql_command, (str(cid), purchase_price))
+    cursor.execute(sql_command, (int(cid), purchase_price))
 
     # Create card's table in dataframe, if nonexistent
     table_name = "card_" + str(cid)
@@ -113,7 +114,7 @@ def make_collection_db(
 
     # Make table of purchase prices, if nonexistent
     sql_command = (
-        "create table if not exists purchase_price (cid string unique, price float)"
+        "create table if not exists purchase_price (cid int unique, price float)"
     )
     cursor.execute(sql_command)
 
