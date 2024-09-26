@@ -22,13 +22,20 @@ def card_stats(database_path: Path, cid: int) -> pl.DataFrame:
         Returns dataframe with schema {"timestamp": pl.String,
         "market_value": pl.Float64, "profit": pl.Float64}.
     """
+    # TODO this function assumes that if a card has no price info it has
+    # no it has no price table. This is true within the package framework,
+    # but may not be if a user pokes around.
+
     # Connect to local SQL database
     connection: sqlite3.Connection = sqlite3.connect(database_path)
     cursor: sqlite3.Cursor = connection.cursor()
 
     # Get card's purchase price
     sql_command = f"select price from purchase_price where cid = {cid}"
-    purchase_price = float(cursor.execute(sql_command).fetchone()[0])
+    purchase_price: Optional[tuple[int, float]] = cursor.execute(sql_command).fetchone()
+    if purchase_price is None:
+        return f"No records of collection ID {cid} exist in database!"
+    purchase_price = float(purchase_price[0])
 
     # Get card's price data
     sql_command = f"select * from card_{cid}"
@@ -236,7 +243,7 @@ def collection_largest_movers(database_path: Path) -> tuple[dict, dict]:
 def delete_card(database_path: Path, cid: int):
     """
     Deletes card from local SQL database. This includes its
-    price table and its purchase price information.
+    price table and purchase price information.
 
     Parameters
     ----------
@@ -250,11 +257,12 @@ def delete_card(database_path: Path, cid: int):
     cursor: sqlite3.Cursor = connection.cursor()
 
     # Delete card's price table from database
-    sql_command = f"""drop table card_{cid}"""
+    sql_command = f"drop table if exists card_{cid}"
     cursor.execute(sql_command)
 
     # Delete card's purchase price
-    sql_command = f"""delete from purchase_price where id = {cid}"""
+    sql_command = f"delete from purchase_price where cid = {cid}"
     cursor.execute(sql_command)
 
+    connection.commit()
     connection.close()
