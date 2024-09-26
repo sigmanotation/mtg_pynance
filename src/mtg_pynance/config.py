@@ -71,10 +71,10 @@ class Config:
         Get timestamp of local bulk data files if they exist or return
         None if they don't.
         """
-        if not self.get_bulk_info_path().exists():
-            return None
-
-        if not self.get_bulk_data_path().exists():
+        if (
+            not self.get_bulk_info_path().exists()
+            or not self.get_bulk_data_path().exists()
+        ):
             return None
 
         # Get timestamp of local files

@@ -24,6 +24,7 @@ nav:
     - Config: api/config.md
     - Core: api/core.md
     - Retrieval: api/retrieval.md
+    - Logger: api/logger.md
   - Acknowledgements: acknowledgements.md
 
 plugins:
