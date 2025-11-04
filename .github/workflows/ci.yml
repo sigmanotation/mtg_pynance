@@ -14,8 +14,7 @@ jobs:
               with:
                 python-version: '3.13'
             - name: Install dependencies
-              run: |
-                pdm sync
+              run: pdm sync
             - name: Check format
               run: pdm run ruff format --check ./src
     deploy-gh-pages:
@@ -25,4 +24,6 @@ jobs:
               with:
                 python-version: '3.13'
             - name: Publish docs
-              run: mkdocs gh-deploy --force
+              run: |
+                pip install mkdocs-material 
+                mkdocs gh-deploy --force
