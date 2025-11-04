@@ -14,4 +14,4 @@ mtg_pynance operates totally locally with the CSV file of your collection, the d
 
 ### Records only current prices
 
-mtg_pynance will not calculate the price history of a card when ran, only its *current* price. The prices come from Scryfall's bulk data default cards file which is updated only a few times a day. This means that mtg_pynance cannot provide real-time price data. Moreover, it only records prices when it is run which is controlled by you, the user. If you want to record price information for each day, *you* will have to run mtg_pynance everyday. If this sounds tedious, no worries! Check [this](./user_guide/automation.md) out to see an example on Mac for automating the process.
+mtg_pynance will not calculate the price history of a card when ran, only its *current* price. The prices come from Scryfall's bulk data default cards file which is updated only a few times a day. This means that mtg_pynance cannot provide real-time price data. Moreover, it only records prices when it is run which is controlled by you, the user. If you want to record price information for each day, *you* will have to run mtg_pynance everyday.
