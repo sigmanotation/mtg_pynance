@@ -27,4 +27,5 @@ jobs:
             - name: Publish docs
               run: |
                 pip install mkdocs-material 
+                pip install mkdocstrings
                 mkdocs gh-deploy --force
