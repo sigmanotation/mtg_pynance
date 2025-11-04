@@ -5,10 +5,10 @@
 groups = ["default", "docs", "lint"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:3fb56dc39efee663ec7139fc890f4c4163c83868c27fcfa77d0a8bd805264c55"
+content_hash = "sha256:25428997f9f0c9be70520e27594dd06c9324fe3b76820b477918c6624002f19f"
 
 [[metadata.targets]]
-requires_python = ">=3.12"
+requires_python = ">=3.13"
 
 [[package]]
 name = "babel"
