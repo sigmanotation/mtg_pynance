@@ -26,6 +26,6 @@ jobs:
                 python-version: '3.13'
             - name: Publish docs
               run: |
-                pip install mkdocs-material 
-                pip install mkdocstrings
+                pip install mkdocs-material \
+                            mkdocstrings-python
                 mkdocs gh-deploy --force
