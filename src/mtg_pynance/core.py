@@ -159,7 +159,9 @@ def run_mtg_pynance(config: Config):
 
     print("Importing collection and bulk data files...")
     collection: pl.LazyFrame = load_collection(config.collection_path)
-    bulk_data: pl.DataFrame = pl.read_json(config.get_bulk_data_path(), infer_schema_length=None)
+    bulk_data: pl.DataFrame = pl.read_json(
+        config.get_bulk_data_path(), infer_schema_length=None
+    )
     print("Collection and bulk data files imported.")
 
     make_collection_db(config.get_database_path(), bulk_data, collection, local_dt)
