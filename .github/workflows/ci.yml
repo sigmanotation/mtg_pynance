@@ -26,6 +26,6 @@ jobs:
               with:
                 python-version: '3.13'
             - name: Install dependencies
-              run: pdm install
+              run: pdm install -G:all
             - name: Publish docs
               run: mkdocs gh-deploy --force
