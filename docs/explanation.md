@@ -6,7 +6,7 @@ The core function of mtg_pynance is to create a local SQL database of the cards 
 
 ### Downloads Scryfall's bulk data file
 
-mtg_pynance does not query the Scryfall API for each card in your collection CSV. The maximum number of times we can query Scryfall per second is 10, and most collections are far larger than 10 cards. To avoid obscenely long run times, mtg_pynance downloads the entire Scryfall bulk data file to your computer and searches it locally for your collection's price data. This file is large, coming in at a little less than 500 Mb.
+mtg_pynance does not query the Scryfall API for each card in your collection CSV. The maximum number of times we can query Scryfall per second is 10, and most collections are far larger than 10 cards. To avoid obscenely long run times, mtg_pynance downloads the entire Scryfall bulk data file to your computer and searches it locally for your collection's price data. This file is large, coming in around 500 Mb.
 
 ### Stores information locally
 
