@@ -25,7 +25,11 @@ def retrieve_bulk_data(
     """
     # API call to Scryfall for its bulk data default cards information
     scryfall = "https://api.scryfall.com/bulk-data/default-cards"
-    bulk_info_r = requests.get(scryfall, params={"format": "json"})
+    bulk_info_r = requests.get(
+        scryfall,
+        params={"format": "json"},
+        headers={"User-Agent": "mtg_pynance", "Accept": "*/*"},
+    )
     bulk_info_j = bulk_info_r.json()
 
     # Check if local files exist and are older than Scryfall's

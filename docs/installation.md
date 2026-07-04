@@ -1,5 +1,5 @@
 ## Requirements
-mtg_pynance is written in Python and, as such, requires it to be used. For Python installation instructions, consult the official [website](https://www.python.org/). Currently, mtg_pynance is compatible with Python versions 3.12 and later.
+mtg_pynance is written in Python and, as such, requires it to be used. For Python installation instructions, consult the official [website](https://www.python.org/). Currently, mtg_pynance is compatible with Python versions 3.13 and later.
 
 mtg_pynance requires pip to download it. To install pip, check out the instructions [here](https://pypi.org/project/pip/).
 

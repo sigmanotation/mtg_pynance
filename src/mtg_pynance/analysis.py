@@ -22,10 +22,6 @@ def card_stats(database_path: Path, cid: int) -> pl.DataFrame:
         Returns dataframe with schema {"timestamp": pl.String,
         "market_value": pl.Float64, "profit": pl.Float64}.
     """
-    # TODO this function assumes that if a card has no price info it has
-    # no it has no price table. This is true within the package framework,
-    # but may not be if a user pokes around.
-
     # Connect to local SQL database
     connection: sqlite3.Connection = sqlite3.connect(database_path)
     cursor: sqlite3.Cursor = connection.cursor()
@@ -110,7 +106,6 @@ def collection_stats(database_path: Path) -> pl.DataFrame:
         pl.col("market_value").sum(), pl.col("gain/loss").sum()
     )
 
-    # TODO ensure that this will always sort correctly because the timestampsa are strings
     # Sort dataframe from earliest to latest timestamps
     df = df.sort("timestamp")
 
