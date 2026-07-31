@@ -27,7 +27,6 @@ def retrieve_bulk_data(
     scryfall = "https://api.scryfall.com/bulk-data/default-cards"
     bulk_info_r = requests.get(
         scryfall,
-        params={"format": "json"},
         headers={"User-Agent": "mtg_pynance", "Accept": "*/*"},
     )
     bulk_info_j = bulk_info_r.json()
@@ -47,8 +46,8 @@ def retrieve_bulk_data(
 
     # Write bulk data file
     print("Downloading Scryfall's bulk data default cards file...")
-    url = bulk_info_j["download_uri"]
-    bulk_data_r = requests.get(url, params={"format": "json"}, stream=True)
+    url = bulk_info_j["jsonl_download_uri"]
+    bulk_data_r = requests.get(url, stream=True)
     bulk_data_j = bulk_info_r.json()
     with tqdm.wrapattr(
         open(bulk_data_file, "wb"),
@@ -57,7 +56,7 @@ def retrieve_bulk_data(
         unit_scale=True,
         unit_divisor=1024,
         miniters=1,
-        total=bulk_data_j["size"],
+        total=bulk_data_j["compressed_size"],
     ) as fout:
         for chunk in bulk_data_r.iter_content(chunk_size=4096):
             fout.write(chunk)
