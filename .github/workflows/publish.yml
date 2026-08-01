@@ -14,10 +14,5 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: pdm-project/setup-pdm@v4
-            - name: Show package version
-              run: |
-                grep version pyproject.toml
-                pdm show --version
-                ls -la dist/ || true
             - name: Publish packages to PyPI
               run: pdm publish
